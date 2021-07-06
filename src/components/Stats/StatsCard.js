@@ -1,5 +1,6 @@
 import React from 'react'
 
+
 const StatsCard = ({title,quantity}) => {
     return (
         <div className="col-md-3 m-4 text-center" style={{maxWidth: "16rem" ,background: "white", borderRadius: "10px", boxShadow: "rgba(0, 0, 0, 0.35) 0px 5px 15px"}}>
