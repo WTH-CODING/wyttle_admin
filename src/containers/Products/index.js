@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Layout from "../../components/Layout";
 import { Container, Row, Col, Table } from "react-bootstrap";
 import Input from "../../components/UI/Input";
@@ -17,17 +17,37 @@ const Products = (props) => {
   const [quantity, setQuantity] = useState("");
   const [price, setPrice] = useState("");
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [productPictures, setProductPictures] = useState([]);
   const [show, setShow] = useState(false);
   const [productDetailModal, setProductDetailModal] = useState(false);
   const [productDetails, setProductDetails] = useState(null);
+  const [update, setUpdate] = useState(false);
   const category = useSelector((state) => state.category);
   const product = useSelector((state) => state.product);
+  const [products, setProducts] = useState([]);
   const dispatch = useDispatch();
 
   const handleClose = () => {
     setShow(false);
+  };
+
+  const addProducts = async () => {
+    const response = await fetch("http://20.84.89.186/api/v1/product", {
+      method: "POST",
+      body: JSON.stringify({
+        name: name,
+        price: price,
+        description: description,
+        imageUrl: imageUrl,
+      }),
+      headers: { "content-type": "application/json" },
+    });
+    if (response.ok) {
+      setUpdate(true);
+      handleClose();
+    }
   };
 
   const submitProductForm = () => {
@@ -45,6 +65,16 @@ const Products = (props) => {
     dispatch(addProduct(form)).then(() => setShow(false));
   };
   const handleShow = () => setShow(true);
+  useEffect(() => {
+    const getProducts = () => {
+      fetch("http://20.84.89.186/api/v1/product")
+        .then((response) => response.json())
+        .then((data) => setProducts(data));
+
+      console.log("getProducts Function Called");
+    };
+    getProducts();
+  }, [update]);
 
   const createCategoryList = (categories, options = []) => {
     for (let category of categories) {
@@ -75,14 +105,14 @@ const Products = (props) => {
           </tr>
         </thead>
         <tbody>
-          {product.products.length > 0
-            ? product.products.map((product) => (
+          {products.length > 0
+            ? products.map((product) => (
                 <tr key={product._id}>
                   <td>2</td>
                   <td>{product.name}</td>
                   <td>{product.price}</td>
                   <td>{product.quantity}</td>
-                  <td>{product.category.name}</td>
+                  <td>{product.description}</td>
                   <td>
                     <button onClick={() => showProductDetailsModal(product)}>
                       info
@@ -112,7 +142,7 @@ const Products = (props) => {
         show={show}
         handleClose={handleClose}
         modalTitle={"Add New Product"}
-        onSubmit={submitProductForm}
+        onSubmit={addProducts}
       >
         <Input
           label="Name"
@@ -137,6 +167,12 @@ const Products = (props) => {
           value={description}
           placeholder={`Description`}
           onChange={(e) => setDescription(e.target.value)}
+        />
+        <Input
+          label="Image URL"
+          value={imageUrl}
+          placeholder={`image url`}
+          onChange={(e) => setImageUrl(e.target.value)}
         />
         <select
           className="form-control"
